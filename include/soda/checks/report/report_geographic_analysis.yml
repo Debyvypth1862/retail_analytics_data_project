@@ -1,0 +1,28 @@
+checks for report_geographic_analysis:
+  # Check for required fields
+  - missing_count(country) = 0:
+      name: All records have country
+  - missing_count(iso) = 0:
+      name: All records have ISO code
+  - missing_count(country_revenue) = 0:
+      name: All records have revenue data
+
+  # Validate metrics are not negative
+  - min(country_revenue):
+      fail: when < 0
+  - min(unique_products):
+      fail: when < 0
+  - min(total_customers):
+      fail: when < 0
+
+  # Check ranking integrity
+  - duplicate_count(revenue_rank) = 0:
+      name: Revenue ranks are unique
+
+  # Validate data completeness
+  - row_count > 0:
+      name: Report contains data
+  
+  # Check top products data
+  - missing_count(top_3_products) = 0:
+      name: All countries have top products listed

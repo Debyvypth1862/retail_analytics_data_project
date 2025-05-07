@@ -1,0 +1,22 @@
+checks for report_sales_overview:
+  # Check for negative values in key metrics
+  - min(total_transactions):
+      fail: when < 0
+  - min(total_customers):
+      fail: when < 0
+  - min(total_revenue):
+      fail: when < 0
+
+  # Check for completeness of country data
+  - missing_count(country) = 0:
+      name: Country data is complete for country granularity
+      filter: granularity = 'Country'
+
+  # Check for completeness of date data
+  - missing_count(time_period) = 0:
+      name: Time period is complete for daily granularity
+      filter: granularity = 'Daily'
+
+  # Validate row counts
+  - row_count > 0:
+      name: Report contains data

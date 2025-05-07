@@ -1,0 +1,30 @@
+checks for report_product_performance:
+  # Check for required fields
+  - missing_count(product_id) = 0:
+      name: All records have product ID
+  - missing_count(stock_code) = 0:
+      name: All records have stock code
+  - missing_count(description) = 0:
+      name: All records have description
+
+  # Validate metrics are not negative
+  - min(total_quantity):
+      fail: when < 0
+  - min(total_revenue):
+      fail: when < 0
+  - min(avg_unit_price):
+      fail: when < 0
+  - min(total_sales):
+      fail: when < 0
+  - min(countries_sold):
+      fail: when < 0
+
+  # Check ranking integrity
+  - duplicate_count(revenue_rank) = 0:
+      name: Revenue ranks are unique
+  - duplicate_count(quantity_rank) = 0:
+      name: Quantity ranks are unique
+  
+  # Validate data completeness
+  - row_count > 0:
+      name: Report contains data

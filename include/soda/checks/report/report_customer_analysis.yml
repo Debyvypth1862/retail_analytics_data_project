@@ -1,0 +1,27 @@
+checks for report_customer_analysis:
+  # Validate key metrics are not negative
+  - min(total_transactions):
+      fail: when < 0
+  - min(total_items):
+      fail: when < 0
+  - min(total_revenue):
+      fail: when < 0
+  - min(avg_basket_size):
+      fail: when < 0
+  - min(months_active):
+      fail: when < 0
+
+  # Check for required fields
+  - missing_count(customer_id) = 0:
+      name: All records have customer ID
+  - missing_count(customer_segment) = 0:
+      name: All customers have a segment
+
+  # Validate customer segments
+  - values in (customer_segment):
+      name: Valid customer segments
+      valid values: ['Loyal', 'Regular', 'New']
+
+  # Check ranking integrity
+  - duplicate_count(revenue_rank) = 0:
+      name: Revenue ranks are unique

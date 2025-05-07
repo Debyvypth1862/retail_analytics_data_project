@@ -1,0 +1,31 @@
+checks for report_time_analysis:
+  # Validate time dimensions
+  - min(hour_of_day):
+      fail: when < 0
+  - max(hour_of_day):
+      fail: when > 23
+  - min(month):
+      fail: when < 1
+  - max(month):
+      fail: when > 12
+
+  # Check metrics are not negative
+  - min(num_transactions):
+      fail: when < 0
+  - min(num_customers):
+      fail: when < 0
+  - min(total_items):
+      fail: when < 0
+  - min(total_revenue):
+      fail: when < 0
+  - min(avg_transaction_value):
+      fail: when < 0
+
+  # Validate time periods
+  - values in (time_period):
+      name: Valid time periods
+      valid values: ['Morning', 'Afternoon', 'Evening', 'Night']
+
+  # Check data completeness
+  - row_count > 0:
+      name: Report contains data
