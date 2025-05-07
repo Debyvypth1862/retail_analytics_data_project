@@ -1,404 +1,278 @@
 # Retail Analytics Project
 
-# Data Pipeline Architecture
-
-This repository contains a data pipeline architecture using modern data stack technologies.
-
-## Architecture Diagram
-
-```mermaid
-flowchart LR
-    subgraph "Data Sources"
-        CSV["CSV Files"]
-        JSON["JSON Files"]
-    end
-
-    subgraph "Apache Airflow"
-        Ingest["Data Ingestion"]
-        QC1["Quality Check"]
-    end
-
-    subgraph "Google BigQuery"
-        Dataset["BigQuery Dataset"]
-        Raw1["raw_sales table"]
-        Raw2["raw_store table"]
-        QC2["Quality Check"]
-    end
-
-    subgraph "Soda"
-
-      subgraph "dbt Core - Data Modeling"
-          DimP["dim_product"]
-          DimSu["dim_supplier"]
-          DimSt["dim_store"]
-          Fact["fct_sales"]
-          DataModel["Data Modeling"]
-          QC3["Quality Check"]
-      end
-
-    end
-
-    subgraph "Metabase"
-
-      subgraph "dbt Core - Reporting"
-          RepS["report_sales"]
-          RepC["report_category"]
-          RepM["report_monthly"]
-          ReportBuild["Report Building"]
-          QC4["Quality Check"]
-          Dashboard["Dashboard"]
-      end
-
-    end
-
-    CSV --> Ingest
-    JSON --> Ingest
-    Ingest --> QC1
-    QC1 --> Dataset
-
-    Dataset --> Raw1
-    Dataset --> Raw2
-    Raw1 --> QC2
-    Raw2 --> QC2
-
-    QC2 --> DataModel
-    DataModel --> DimP
-    DataModel --> DimSu
-    DataModel --> DimSt
-    DataModel --> Fact
-    DimP & DimSu & DimSt & Fact --> QC3
-
-    QC3 --> ReportBuild
-    ReportBuild --> RepS
-    ReportBuild --> RepC
-    ReportBuild --> RepM
-    RepS & RepC & RepM --> QC4
-    QC4 --> Dashboard
-
-    classDef airflow fill:#1DA1F2,stroke:#333,stroke-width:1px;
-    classDef bigquery fill:#4285F4,stroke:#333,stroke-width:1px;
-    classDef dbt fill:#FF694B,stroke:#333,stroke-width:1px;
-    classDef metabase fill:#509EE3,stroke:#333,stroke-width:1px;
-
-    class Ingest,QC1 airflow;
-    class Dataset,Raw1,Raw2,QC2 bigquery;
-    class DimP,DimSu,DimSt,Fact,DataModel,QC3,RepS,RepC,RepM,ReportBuild,QC4 dbt;
-    class Dashboard metabase;
-```
-
-_Using Airflow, BigQuery, Google Cloud Storage, dbt, Soda, Metabase and Python_
-
 ## Overview
 
-This project implements an end-to-end data pipeline processing retail data. The pipeline includes data modeling into fact-dimension tables, data quality checks, and cloud storage integration, showcasing modern data stack technologies.
+This project implements an end-to-end retail data analytics pipeline using modern data stack technologies. It processes online retail transaction data, performs data quality checks, and generates comprehensive business intelligence reports.
+
+![Pipeline Overview](docs/images/dag_flow_overview.png)
 
 ## Tech Stack
 
 - **Python** - Core programming language
-- **Docker & Docker Compose** - Containerization
-- **Apache Airflow** - Workflow orchestration
-- **Google Cloud Platform**:
+- **Apache Airflow (Astronomer)** - Workflow orchestration
+- **Google Cloud Platform**
   - Google Cloud Storage - Data lake
   - BigQuery - Data warehouse
-- **dbt** - Data transformation
-- **Soda.io** - Data quality
+- **dbt** - Data transformation & modeling
+- **Soda** - Data quality checks
 - **Metabase** - Data visualization
+- **Docker & Docker Compose** - Containerization
 
 ## Project Structure
 
 ```
-├── dags/              # Airflow DAG definitions
-│   └── retail.py      # Main retail pipeline DAG
-├── docs/              # Documentation
-│   └── images/        # Project diagrams
-├── include/           # Project resources
-│   ├── datasets/      # Source data files
-│   ├── dbt/          # dbt transformations
-│   ├── gcp/          # GCP credentials
-│   └── soda/         # Data quality checks
+├── dags/                          # Airflow DAG definitions
+│   └── retail.py                  # Main retail pipeline DAG
+├── docs/                          # Documentation
+│   └── images/                    # Project diagrams
+├── include/
+│   ├── datasets/                  # Source data files
+│   │   ├── country.csv           # Country reference data
+│   │   └── online_retail.csv     # Main retail data
+│   ├── dbt/                      # dbt transformations
+│   │   ├── models/
+│   │   │   ├── report/          # Reporting models
+│   │   │   ├── sources/         # Source definitions
+│   │   │   └── transform/       # Core transformations
+│   │   └── dbt_project.yml
+│   └── soda/                     # Data quality checks
+│       └── checks/               # Soda check definitions
+└── docker-compose.override.yml    # Docker configuration
 ```
 
 ## Prerequisites
 
 1. [Docker Desktop](https://docs.docker.com/desktop/)
-2. [Astronomer CLI](https://www.astronomer.io/docs/astro/cli/install-cli)
+2. [Astronomer CLI](https://www.astronomer.io/docs/cloud/stable/develop/cli-quickstart)
 3. Google Cloud Platform account
 4. Soda Cloud account
+5. Python 3.8+
 
 ## Setup Instructions
 
-### 1. Clone the Repository
+### 1. Environment Setup
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd retail_analytics_project
 
-# Or using Git
-git clone https://github.com/Debyvypth1862/retail_analytics_data_project.git
-```
-
-### 2. Initialize Airflow Project
-
-```bash
+# Initialize Astronomer project
 astro dev init
-# Confirm with 'y' when prompted
 ```
 
-### 3. Configure GCP
+### 2. GCP Configuration
 
-1. Create a new project at [console.cloud.google.com](https://console.cloud.google.com)
-2. Update project ID in:
+1. Create a new GCP project at [console.cloud.google.com](https://console.cloud.google.com)
+2. Enable required APIs:
+   - BigQuery API
+   - Cloud Storage API
+3. Create a service account with the following roles:
+   - BigQuery Admin
+   - Storage Admin
+4. Download service account key as `service_account.json`
 
-   - `.env` (GCP_PROJECT_ID)
-   - `include/dbt/models/sources/sources.yml` (database)
-   - `include/dbt/profiles.yml` (project)
+### 3. Project Configuration
 
-3. Create a GCS bucket:
-   - Go to [Cloud Storage Browser](https://console.cloud.google.com/storage/browser)
-   - Create bucket named `<yourname>_online_retail`
-   - Update `bucket_name` in `dags/retail.py`
+1. Create `include/gcp/` directory and place `service_account.json` there
+2. Update configuration files:
+   - `.env` - Environment variables
+   - `include/dbt/profiles.yml` - dbt connection settings
+   - `include/soda/configuration.yml` - Soda connection settings
 
-### 4. Setup Service Account
-
-1. In IAM, create service account `airflow-online-retail`
-2. Grant admin access for:
-   - Google Cloud Storage
-   - BigQuery
-3. Export JSON key as `service_account.json`
-4. Create `include/gcp/` folder and place key file there
-
-### 5. Start Airflow
-
-![image](docs/images/dag_flow_overview.png)
+### 4. Start the Pipeline
 
 ```bash
 astro dev start
 ```
 
-Access Airflow at http://localhost:8080 (admin/admin)
+## Data Models
 
-### 6. Configure Airflow Connection
+### Source Layer
 
-1. Go to Admin → Connections
-2. Add new Google Cloud connection:
-   - Connection Id: `gcp`
-   - Connection Type: `Google Cloud`
-   - Keypath: `/usr/local/airflow/include/gcp/service_account.json`
+- `raw_invoices` - Raw retail transaction data
+- `raw_country` - Country reference data
 
-### 7. Configure Soda
+### Transform Layer
 
-1. Create account at [soda.io](https://www.soda.io/)
-2. Generate API key from your profile
-3. Update `include/soda/configuration.yml` or `.env` with:
+1. Dimension Tables:
 
-```yaml
-soda_cloud:
-  host: cloud.us.soda.io # Use cloud.eu.soda.io for EU region
-  api_key_id: <KEY>
-  api_key_secret: <SECRET>
+   - `dim_customer` - Customer information
+   - `dim_datetime` - Date and time dimensions
+   - `dim_product` - Product details
+
+2. Fact Tables:
+   - `fct_invoices` - Transaction fact table
+
+### Report Layer
+
+1. **Sales Overview** (`report_sales_overview.sql`)
+
+   - Daily and country-level sales metrics
+   - Revenue, transactions, and customer counts
+   - Key indicators: total revenue, average transaction value
+
+2. **Customer Analysis** (`report_customer_analysis.sql`)
+
+   - Customer segmentation (Loyal/Regular/New)
+   - Purchase patterns and behavior
+   - Customer lifetime value metrics
+
+3. **Product Performance** (`report_product_performance.sql`)
+
+   - Product sales analysis
+   - Revenue and quantity rankings
+   - Geographic distribution
+
+4. **Time Analysis** (`report_time_analysis.sql`)
+
+   - Sales patterns by time period
+   - Peak hours and seasonal trends
+   - Year-over-year comparisons
+
+5. **Geographic Analysis** (`report_geographic_analysis.sql`)
+   - Country-level performance
+   - Market penetration metrics
+   - Regional product preferences
+
+## Report Metrics Details
+
+### Sales Metrics
+
+```
+Revenue = SUM(Quantity * UnitPrice)
+Average Transaction Value = Revenue / COUNT(DISTINCT InvoiceNo)
+Items per Transaction = SUM(Quantity) / COUNT(DISTINCT InvoiceNo)
 ```
 
-### 8. Setup Metabase
+### Customer Metrics
 
-1. Access Metabase at http://localhost:3000
-2. Create account and connect to BigQuery:
-   - Display name: `BigQuery_DW`
-   - Project ID: Your GCP project ID
-   - Service Account Key: Upload `service_account.json`
-
-## Running the Pipeline
-
-1. Access Airflow UI at http://localhost:8080
-2. Enable and trigger the `retail` DAG
-3. Monitor execution in:
-   - Airflow UI
-   - GCP Console (Storage & BigQuery)
-   - Soda Cloud Dashboard
-4. Create visualizations in Metabase
-
-## Dataset Information
-
-The project uses two main datasets in `include/datasets/`:
-
-- `online_retail.csv` - Original dataset
-- `country.csv` - Generated from BigQuery
-
-## SQL Reports Navigation
-
-All report SQL files are located in `include/dbt/models/report/`. Below is a detailed breakdown of each report:
-
-### 1. Sales Overview (`report_sales_overview.sql`)
-```sql
-[Location] (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_sales_overview.sql)
-
-Purpose: Provides daily and country-level sales metrics
-Key Metrics:
-- Total Transactions (COUNT DISTINCT invoice_id)
-- Total Customers (COUNT DISTINCT customer_id)
-- Total Revenue (SUM total)
-
-Features:
-- Daily aggregation by date
-- Country-level aggregation
-- Unified view using UNION ALL
+```
+Customer Lifetime Value = SUM(Revenue) per CustomerID
+Purchase Frequency = COUNT(DISTINCT InvoiceNo) / COUNT(DISTINCT CustomerID)
+Average Days Between Purchases = AVG(days between customer purchases)
 ```
 
-### 2. Customer Analysis (`report_customer_analysis.sql`)
-```sql
-[Location] (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_customer_analysis.sql)
+### Product Metrics
 
-Purpose: Customer segmentation and behavior analysis
-Key Metrics:
-- Total Transactions per customer
-- Average Basket Size
-- Customer Revenue
-- Months Active
-
-Segmentation:
-- Loyal: ≥6 months active
-- Regular: 3-5 months active
-- New: <3 months active
+```
+Product Revenue Share = Product Revenue / Total Revenue * 100
+Stock Movement Rate = Quantity Sold / Time Period
+Geographic Penetration = COUNT(DISTINCT Country) per Product
 ```
 
-### 3. Product Performance (`report_product_performance.sql`)
-```sql
-[Location] (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_product_performance.sql)
+### Time-Based Metrics
 
-Purpose: Comprehensive product analytics
-Key Metrics:
-- Total Quantity Sold
-- Total Revenue
-- Average Unit Price
-- Sales Count
-- Geographic Spread
-
-Features:
-- Product ranking by revenue and quantity
-- Country-wise distribution
-- Sales performance tracking
+```
+Daily Sales Velocity = Revenue / Number of Active Hours
+Peak Hour Performance = Revenue in Hour / Average Hourly Revenue
+Seasonal Index = Period Revenue / Average Period Revenue
 ```
 
-### 4. Time-Based Analysis (`report_time_analysis.sql`)
-```sql
-[Location] (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_time_analysis.sql)
+### Geographic Metrics
 
-Purpose: Temporal analysis of sales patterns
-Time Dimensions:
-- Hour of Day
-- Day of Week
-- Month
-- Year
-
-Key Features:
-- Time period categorization:
-  * Morning (6-11)
-  * Afternoon (12-17)
-  * Evening (18-23)
-  * Night (0-5)
-- Moving average calculations
-- Peak sales identification
 ```
-
-### 5. Geographic Analysis (`report_geographic_analysis.sql`)
-```sql
-[Location] (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_geographic_analysis.sql)
-
-Purpose: Country-level performance analysis
-Key Metrics:
-- Country Revenue
-- Unique Products per Country
-- Customer Count
-- Top Products
-
-Features:
-- Revenue ranking by country
-- Top 3 products per country
-- Market penetration metrics
-```
-
-### 6. Supplementary Reports
-
-#### Customer Invoices (`report_customer_invoices.sql`)
-```sql
-[Location] (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_customer_invoices.sql)
-
-Purpose: Top 10 countries by revenue
-Metrics:
-- Total Invoices per Country
-- Total Revenue per Country
-```
-
-#### Product Invoices (`report_product_invoices.sql`)
-```sql
-[Location] (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_product_invoices.sql)
-
-Purpose: Top 10 products by quantity
-Metrics:
-- Total Quantity Sold
-- Product Details (ID, Code, Description)
-```
-
-#### Year Invoices (`report_year_invoices.sql`)
-```sql
-[Location] (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_year_invoices.sql)
-
-Purpose: Temporal revenue analysis
-Metrics:
-- Monthly Invoice Count
-- Monthly Revenue
-- Year-over-Year Comparisons
+Market Share = Country Revenue / Total Revenue * 100
+Customer Density = Customers per Country / Total Customers * 100
+Product Diversity = Unique Products Sold per Country
 ```
 
 ## Data Quality Checks
 
-Each report includes comprehensive data quality checks:
+### Source Checks
 
-- Validation of key metrics (no negative values)
-- Completeness checks for critical fields
-- Data integrity validation
-- Time series continuity checks
-- Geographic data validation
+- Data completeness
+- Data type validation
+- Value range checks
 
-## Accessing the Reports
+### Transform Checks
 
-1. **Metabase Dashboards**
+- Referential integrity
+- Business rule validation
+- Metric consistency
 
-   - URL: http://localhost:3000
-   - Login with your credentials
-   - Navigate to Dashboards section
+### Report Checks
 
-2. **dbt Documentation**
-
-   - Contains detailed documentation of all metrics
-   - Data lineage information
-   - Field-level descriptions
-
-3. **Soda Data Quality**
-   - Monitor data quality in real-time
-   - Access data quality dashboards
-   - View historical quality metrics
+- Aggregation accuracy
+- Time series continuity
+- Cross-report consistency
 
 ## Using the Reports
 
 ### In dbt
+
 ```bash
-# Run all reports
-dbt run --models report.*
+# Run all models
+dbt run
 
 # Run specific report
 dbt run --models report.report_sales_overview
+
+# Run tests
+dbt test
 ```
 
 ### In Metabase
-1. Access reports via preconfigured dashboards
-2. Create custom visualizations using the report models
-3. Schedule automated updates
 
-### Data Freshness
-- Reports are updated daily through Airflow DAG
-- Last update timestamp available in Metabase
-- Data quality status visible in Soda Cloud
+1. Access: http://localhost:3000
+2. Available Dashboards:
+   - Sales Overview
+   - Customer Insights
+   - Product Analytics
+   - Geographic Performance
+   - Time Series Analysis
 
-## Contact
+### Data Refresh Schedule
 
-- [LinkedIn](https://www.linkedin.com/in/debypham/)
-- [GitHub](https://github.com/Debyvypth1862)
-- [vypmon@gmail.com](mailto:vypmon@gmail.com)
+- Full refresh: Daily at 1 AM UTC
+- Incremental updates: Every 6 hours
+- Quality checks: After each data load
+
+## Monitoring
+
+### Airflow
+
+- URL: http://localhost:8080
+- Credentials: admin/admin
+- DAG: retail_pipeline
+
+### Soda Cloud
+
+- Data quality monitoring
+- Anomaly detection
+- Alert configuration
+
+### dbt Documentation
+
+- Data lineage
+- Table documentation
+- Test coverage
+
+## Troubleshooting
+
+### Common Issues
+
+1. Connection errors:
+
+   - Verify GCP credentials
+   - Check network connectivity
+   - Validate service account permissions
+
+2. Data quality failures:
+
+   - Check Soda Cloud for detailed error messages
+   - Verify source data integrity
+   - Review transformation logic
+
+3. Performance issues:
+   - Monitor query performance in BigQuery
+   - Check dbt model materialization
+   - Review table partitioning
+
+## Contact & Support
+
+- GitHub: [Alan Lanceloth](https://github.com/alanceloth/)
+- LinkedIn: [Alan Lanceloth](https://www.linkedin.com/in/alanlanceloth/)
+- Email: [alan.lanceloth@gmail.com](mailto:alan.lanceloth@gmail.com)
+- Project Repository: [Retail Analytics Project](https://github.com/alanceloth/Retail_Analytics_Project)
+- YouTube Demo: [Live Project Demo](https://www.youtube.com/watch?v=NP08fHker5U)
