@@ -25,22 +25,26 @@ flowchart LR
         QC2["Quality Check"]
     end
 
-    subgraph "dbt Core - Data Modeling"
-        DimP["dim_product"]
-        DimSu["dim_supplier"]
-        DimSt["dim_store"]
-        Fact["fct_sales"]
-        DataModel["Data Modeling"]
-        QC3["Quality Check"]
+    subgraph "Soda"
+      subgraph "dbt Core - Data Modeling"
+          DimP["dim_product"]
+          DimSu["dim_supplier"]
+          DimSt["dim_store"]
+          Fact["fct_sales"]
+          DataModel["Data Modeling"]
+          QC3["Quality Check"]
+      end
     end
 
-    subgraph "dbt Core - Reporting"
-        RepS["report_sales"]
-        RepC["report_category"]
-        RepM["report_monthly"]
-        ReportBuild["Report Building"]
-        QC4["Quality Check"]
-        Dashboard["Dashboard"]
+    subgraph "Metabase"
+      subgraph "dbt Core - Reporting"
+          RepS["report_sales"]
+          RepC["report_category"]
+          RepM["report_monthly"]
+          ReportBuild["Report Building"]
+          QC4["Quality Check"]
+          Dashboard["Dashboard"]
+      end
     end
 
     CSV --> Ingest
