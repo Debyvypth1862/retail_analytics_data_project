@@ -26,6 +26,7 @@ flowchart LR
     end
 
     subgraph "Soda"
+
       subgraph "dbt Core - Data Modeling"
           DimP["dim_product"]
           DimSu["dim_supplier"]
@@ -34,9 +35,11 @@ flowchart LR
           DataModel["Data Modeling"]
           QC3["Quality Check"]
       end
+
     end
 
     subgraph "Metabase"
+
       subgraph "dbt Core - Reporting"
           RepS["report_sales"]
           RepC["report_category"]
@@ -45,6 +48,7 @@ flowchart LR
           QC4["Quality Check"]
           Dashboard["Dashboard"]
       end
+      
     end
 
     CSV --> Ingest
