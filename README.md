@@ -227,7 +227,7 @@ All report SQL files are located in `include/dbt/models/report/`. Below is a det
 
 ### 1. Sales Overview (`report_sales_overview.sql`)
 ```sql
-Location: (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_sales_overview.sql)
+Location: (include/dbt/models/report/report_sales_overview.sql)
 
 Purpose: Provides daily and country-level sales metrics
 Key Metrics:
@@ -243,7 +243,7 @@ Features:
 
 ### 2. Customer Analysis (`report_customer_analysis.sql`)
 ```sql
-Location: (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_customer_analysis.sql)
+Location: include/dbt/models/report/report_customer_analysis.sql
 
 Purpose: Customer segmentation and behavior analysis
 Key Metrics:
@@ -260,7 +260,7 @@ Segmentation:
 
 ### 3. Product Performance (`report_product_performance.sql`)
 ```sql
-Location: (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_product_performance.sql)
+Location: include/dbt/models/report/report_product_performance.sql
 
 Purpose: Comprehensive product analytics
 Key Metrics:
@@ -278,7 +278,7 @@ Features:
 
 ### 4. Time-Based Analysis (`report_time_analysis.sql`)
 ```sql
-Location: (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_time_analysis.sql)
+Location: include/dbt/models/report/report_time_analysis.sql
 
 Purpose: Temporal analysis of sales patterns
 Time Dimensions:
@@ -299,7 +299,7 @@ Key Features:
 
 ### 5. Geographic Analysis (`report_geographic_analysis.sql`)
 ```sql
-Location: (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_geographic_analysis.sql)
+Location: include/dbt/models/report/report_geographic_analysis.sql
 
 Purpose: Country-level performance analysis
 Key Metrics:
@@ -318,7 +318,7 @@ Features:
 
 #### Customer Invoices (`report_customer_invoices.sql`)
 ```sql
-Location: (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_customer_invoices.sql)
+Location: include/dbt/models/report/report_customer_invoices.sql
 
 Purpose: Top 10 countries by revenue
 Metrics:
@@ -328,7 +328,7 @@ Metrics:
 
 #### Product Invoices (`report_product_invoices.sql`)
 ```sql
-Location: (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_product_invoices.sql)
+Location: include/dbt/models/report/report_product_invoices.sql
 
 Purpose: Top 10 products by quantity
 Metrics:
@@ -338,7 +338,7 @@ Metrics:
 
 #### Year Invoices (`report_year_invoices.sql`)
 ```sql
-Location: (https://github.com/Debyvypth1862/retail_analytics_data_project/blob/main/include/dbt/models/report/report_year_invoices.sql)
+Location: include/dbt/models/report/report_year_invoices.sql
 
 Purpose: Temporal revenue analysis
 Metrics:
