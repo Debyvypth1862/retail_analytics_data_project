@@ -394,5 +394,3 @@ dbt run --models report.report_sales_overview
 - [LinkedIn](https://www.linkedin.com/in/debypham/)
 - [GitHub](https://github.com/Debyvypth1862)
 - [vypmon@gmail.com](mailto:vypmon@gmail.com)
-#   r e t a i l _ a n a l y t i c s _ d a t a _ p r o j e c t  
- 
